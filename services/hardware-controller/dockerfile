@@ -1,0 +1,10 @@
+# Dockerfile for Hardware Controller (Rust)
+FROM rust:latest
+
+WORKDIR /usr/src/hardware-controller
+
+COPY . .
+
+RUN cargo install --path .
+
+CMD ["hardware-controller"]
