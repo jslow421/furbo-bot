@@ -1,0 +1,48 @@
+name: Robot Build & Push
+on:
+  push:
+    branches: ["main"]
+
+env:
+  REGISTRY: ghcr.io
+  REPO_NAME: ${{ github.repository }}
+
+jobs:
+  # Job 1: Build Rust Control Node (Cross-Compile)
+  build-rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-gnu
+      - name: Cross Build
+        # Uses 'cross' to compile for ARM64 without setting up QEMU manually
+        run: |
+          cargo install cross
+          cross build --release --target aarch64-unknown-linux-gnu --manifest-path ./control/Cargo.toml
+      - name: Build & Push Docker (Rust)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./control
+          file: ./control/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.REPO_NAME }}-control:latest
+
+  # Job 2: Build Python Vision Node
+  build-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build & Push Docker (Python)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./vision
+          platforms: linux/arm64
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.REPO_NAME }}-vision:latest

@@ -1,0 +1,29 @@
+services:
+  # The Eyes
+  vision:
+    image: ghcr.io/jslow421/furbo-vision:latest
+    devices:
+      - /dev/video0:/dev/video0
+    environment:
+      - ZMQ_PUB_PORT=5555
+    restart: unless-stopped
+
+  # The Muscles
+  control:
+    image: ghcr.io/jslow421/furbo-control:latest
+    devices:
+      - /dev/gpiomem:/dev/gpiomem
+    environment:
+      - ZMQ_SUB_ADDR=tcp://vision:5555
+    depends_on:
+      - vision
+    restart: unless-stopped
+
+  # The Updater
+  watchtower:
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/pi/.docker/config.json:/config.json
+    command: --interval 300 --cleanup
+    restart: always

@@ -1,0 +1,5 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "./services/hardware-controller/Cargo.toml" // Replace with your actual relative path
+    ]
+}
