@@ -1,20 +1,28 @@
 services:
-  # The Eyes
+  # The Eyes (Python)
   vision:
     image: ghcr.io/jslow421/furbo-vision:latest
+    # "shm_size" is critical for OpenCV. Default Docker (64mb) often causes
+    # "Bus error" crashes when passing frames between processes.
+    shm_size: '512mb'
     devices:
       - /dev/video0:/dev/video0
     environment:
       - ZMQ_PUB_PORT=5555
     restart: unless-stopped
 
-  # The Muscles
+  # The Muscles (.NET 10)
   control:
     image: ghcr.io/jslow421/furbo-control:latest
     devices:
+      # Legacy memory-mapped access (Keep for safety)
       - /dev/gpiomem:/dev/gpiomem
+      # Modern libgpiod access (Required for .NET System.Device.Gpio on newer OS)
+      - /dev/gpiochip4:/dev/gpiochip4
     environment:
       - ZMQ_SUB_ADDR=tcp://vision:5555
+      # Required for "PublishTrimmed" self-contained apps to prevent crashes
+      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
     depends_on:
       - vision
     restart: unless-stopped
