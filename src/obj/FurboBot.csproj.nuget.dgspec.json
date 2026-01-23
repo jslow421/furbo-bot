@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/john/Projects/furbo-bot/services/hardware-controller/ControlNode.csproj": {}
+    "/Users/john/Projects/furbo-bot/src/FurboBot.csproj": {}
   },
   "projects": {
-    "/Users/john/Projects/furbo-bot/services/hardware-controller/ControlNode.csproj": {
+    "/Users/john/Projects/furbo-bot/src/FurboBot.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/john/Projects/furbo-bot/services/hardware-controller/ControlNode.csproj",
-        "projectName": "ControlNode",
-        "projectPath": "/Users/john/Projects/furbo-bot/services/hardware-controller/ControlNode.csproj",
+        "projectUniqueName": "/Users/john/Projects/furbo-bot/src/FurboBot.csproj",
+        "projectName": "FurboBot",
+        "projectPath": "/Users/john/Projects/furbo-bot/src/FurboBot.csproj",
         "packagesPath": "/Users/john/.nuget/packages/",
-        "outputPath": "/Users/john/Projects/furbo-bot/services/hardware-controller/obj/",
+        "outputPath": "/Users/john/Projects/furbo-bot/src/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/john/.nuget/NuGet/NuGet.Config"
@@ -44,9 +44,9 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "dependencies": {
-            "NetMQ": {
+            "System.Device.Gpio": {
               "target": "Package",
-              "version": "[4.0.2.2, )"
+              "version": "[4.1.0, )"
             }
           },
           "imports": [

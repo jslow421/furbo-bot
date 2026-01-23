@@ -1,0 +1,20 @@
+# Build Stage
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+COPY . .
+# We still publish as a single file, but we cannot Trim heavily due to OpenCV's dynamic nature
+RUN dotnet publish "./FurboBot.csproj" -c Release -r linux-arm64 --self-contained true -p:PublishSingleFile=true -o /app/publish
+
+# Runtime Stage
+FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-bookworm-slim-arm64v8
+WORKDIR /app
+
+# INSTALL OPENCV DEPENDENCIES
+# We need these native libraries for the C# wrapper to talk to the camera/video hardware
+RUN apt-get update && apt-get install -y \
+    libopencv-dev \
+    libgdiplus \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /app/publish/FurboBot .
+CMD ["./FurboBot"]

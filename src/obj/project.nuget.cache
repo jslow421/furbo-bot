@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "piqPAM0EFNc=",
+  "success": true,
+  "projectFilePath": "/Users/john/Projects/furbo-bot/src/FurboBot.csproj",
+  "expectedPackageFiles": [
+    "/Users/john/.nuget/packages/system.device.gpio/4.1.0/system.device.gpio.4.1.0.nupkg.sha512"
+  ],
+  "logs": []
+}

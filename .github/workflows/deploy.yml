@@ -1,48 +1,39 @@
-name: Robot Build & Push
+name: Build & Release Robot Brain
+
 on:
   push:
-    branches: ["main"]
+    tags:
+      - 'v*' # Triggers only on version tags (e.g., v1.0.0, v2.1.3)
 
-env:
-  REGISTRY: ghcr.io
-  REPO_NAME: ${{ github.repository }}
+permissions:
+  contents: write # Needed to create the Release
 
 jobs:
-  # Job 1: Build Rust Control Node (Cross-Compile)
-  build-rust:
+  build-and-release:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
-      - name: Install Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-unknown-linux-gnu
-      - name: Cross Build
-        # Uses 'cross' to compile for ARM64 without setting up QEMU manually
-        run: |
-          cargo install cross
-          cross build --release --target aarch64-unknown-linux-gnu --manifest-path ./control/Cargo.toml
-      - name: Build & Push Docker (Rust)
-        uses: docker/build-push-action@v6
-        with:
-          context: ./control
-          file: ./services/hardware-controller/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.REPO_NAME }}-control:latest
+    - uses: actions/checkout@v4
 
-  # Job 2: Build Python Vision Node
-  build-python:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Build & Push Docker (Python)
-        uses: docker/build-push-action@v6
-        with:
-          context: ./vision
-          platforms: linux/arm64
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.REPO_NAME }}-vision:latest
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x 
+
+    - name: Build for Raspberry Pi (ARM64)
+      # -p:PublishSingleFile=true bundles everything into one binary
+      # --self-contained true means you don't need to install .NET on the Pi
+      run: |
+        dotnet publish ./src/RobotBrain/RobotBrain.csproj \
+        -c Release \
+        -r linux-arm64 \
+        --self-contained true \
+        -p:PublishSingleFile=true \
+        -p:PublishTrimmed=true \
+        -o ./publish
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: ./publish/RobotBrain # The binary file to upload
+        generate_release_notes: true
